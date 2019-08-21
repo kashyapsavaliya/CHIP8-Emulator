@@ -1,6 +1,6 @@
 package com.kashyapsavaliya.chip8;
 
-public class cpu {
+public class Cpu {
 
     private static final int MEMORY = 4090;
     private static final int REGISTER_SIZE = 16;
