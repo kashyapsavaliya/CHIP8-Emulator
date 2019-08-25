@@ -1,5 +1,8 @@
 package com.kashyapsavaliya.chip8;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+
 public class Chip8 {
 
     private static final int MEMORY = 4090;
@@ -89,7 +92,17 @@ public class Chip8 {
     }
 
     public void loadGame() {
-
+        try {
+            FileInputStream file = new FileInputStream("Roms/IBM");
+            int bufferSize = file.available();
+            byte[] buffer = new byte[bufferSize];
+            for (int i = 0; i < bufferSize; i++) {
+                memory[i + 512] = (char) buffer[i];
+            }
+            System.out.println("Rom loaded");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void emulateCycle() {
