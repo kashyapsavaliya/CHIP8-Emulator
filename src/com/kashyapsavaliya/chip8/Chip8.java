@@ -107,10 +107,32 @@ public class Chip8 {
 
     public void emulateCycle() {
         // Fetch Opcode
+        opcode = (short) (memory[pc] << 8 | memory[pc + 1]);
+
         // Decode Opcode
-        // Execute Opcode
+        switch (opcode & 0xF000) { // ANNN: Sets I to the address NNN
+            // Execute Opcode
+            case 0xA000:
+                I = (short) (opcode & 0xFFFF);
+                pc += 2;
+                break;
+
+            default:
+                System.out.println("Unknown opcode: " + opcode);
+        }
 
         // Update timers
+        if (delay_timer > 0) {
+            --delay_timer;
+        }
+
+        if (sound_timer > 0) {
+            if (sound_timer == 1) {
+                System.out.println("BEEP!\n");
+                // Sound
+            }
+            --sound_timer;
+        }
     }
 
 }
