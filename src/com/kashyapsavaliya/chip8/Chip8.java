@@ -112,13 +112,116 @@ public class Chip8 {
         // Decode Opcode
         switch (opcode & 0xF000) { // ANNN: Sets I to the address NNN
             // Execute Opcode
+            case 0x0000:
+                switch (opcode & 0x000F) {
+                    case 0x0000: // 0x00E0: Clears the screen
+                        for (int i = 0; i < GFX_SIZE; i++) {
+                            gfx[i] = 0;
+                        }
+                        pc += 2;
+                        break;
+
+                    case 0x000E: // 0x00EE: Returns from subroutine
+                        pc = stack[--sp];
+                        pc += 2;
+                        break;
+
+                    default:
+                        System.out.println("Unknown opcode [0x0000]: " + opcode);
+                }
+                break;
+
+            case 0x0001:
+
+            case 0x0002:
+
+            case 0x0003:
+
+            case 0x0004:
+
+            case 0x0005:
+
+            case 0x0006:
+
+            case 0x0007:
+
+            case 0x0008:
+                switch (opcode & 0x000F) {
+                    case 0x0000:
+
+                    case 0x0001:
+
+                    case 0x0002:
+
+                    case 0x0003:
+
+                    case 0x0004:
+
+                    case 0x0005:
+
+                    case 0x0006:
+
+                    case 0x0007:
+
+                    case 0x000E:
+
+                    default:
+                        System.out.println("Unknown opcode [0x0008]: " + opcode);
+                }
+                break;
+
+            case 0x0009:
+
             case 0xA000:
                 I = (short) (opcode & 0xFFFF);
                 pc += 2;
                 break;
 
+            case 0xB000:
+
+            case 0xC000:
+
+            case 0xD000:
+
+            case 0xE000:
+                switch (opcode & 0x000F) {
+                    case 0x009E:
+
+                    case 0x00A1:
+
+                    default:
+                        System.out.println("Unknown opcode [0xE000]: " + opcode);
+                }
+                break;
+
+            case 0xF000:
+                switch (opcode & 0x000F) {
+                    case 0x0007:
+
+                    case 0x000A:
+
+                    case 0x0015:
+
+                    case 0x0018:
+
+                    case 0x001E:
+
+                    case 0x0029:
+
+                    case 0x0033:
+
+                    case 0x0055:
+
+                    case 0x0065:
+
+                    default:
+                        System.out.println("Unknown opcode [0xF000]: " + opcode);
+                }
+                break;
+
             default:
                 System.out.println("Unknown opcode: " + opcode);
+                break;
         }
 
         // Update timers
