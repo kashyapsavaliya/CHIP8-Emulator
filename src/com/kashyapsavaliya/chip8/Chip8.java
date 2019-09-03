@@ -131,63 +131,63 @@ public class Chip8 {
                 }
                 break;
 
-            case 0x0001:
+            case 0x0001: // Jumps to address NNN
 
-            case 0x0002:
+            case 0x0002: // Calls subroutine at NNN
 
-            case 0x0003:
+            case 0x0003: // Skips the next instruction if VX = NN
 
-            case 0x0004:
+            case 0x0004: // Skips the next instruction if VX != NN
 
-            case 0x0005:
+            case 0x0005: // Skips the next instruction if VX = VY
 
-            case 0x0006:
+            case 0x0006: // Sets VX to NN
 
-            case 0x0007:
+            case 0x0007: // Adds NN to VX
 
             case 0x0008:
                 switch (opcode & 0x000F) {
-                    case 0x0000:
+                    case 0x0000: // Sets VX to the value VY
 
-                    case 0x0001:
+                    case 0x0001: // Sets VX to VX or VY
 
-                    case 0x0002:
+                    case 0x0002: // Sets VX to VX and VY
 
-                    case 0x0003:
+                    case 0x0003: // Sets VX to VX xor VY
 
-                    case 0x0004:
+                    case 0x0004: // Adds VY to VX. VF is set to 1 when there's a carry and 0 if not
 
-                    case 0x0005:
+                    case 0x0005: // VY is subtracted from VX. VF is set to 0 when there's a borrow and 1 if not
 
-                    case 0x0006:
+                    case 0x0006: // Stores the least significant bit of VX in VF. Shifts VX to the right by 1
 
-                    case 0x0007:
+                    case 0x0007: // Sets VX to VY minus VX. VF is set to 0 when there's a borrow and 1 if not
 
-                    case 0x000E:
+                    case 0x000E: // Stores the most significant bit of VX in VF. Shifts VX to the left by 1
 
                     default:
                         System.out.println("Unknown opcode [0x0008]: " + opcode);
                 }
                 break;
 
-            case 0x0009:
+            case 0x0009: // Skips the next instruction if VX != VY
 
-            case 0xA000:
+            case 0xA000: // Sets I to the address NNN
                 I = (short) (opcode & 0xFFFF);
                 pc += 2;
                 break;
 
-            case 0xB000:
+            case 0xB000: // Jumps to the address NNN plus V0
 
-            case 0xC000:
+            case 0xC000: // Sets VX to the result of a bitwise and operation on a random number and NN
 
-            case 0xD000:
+            case 0xD000: // Draws a sprite at coordinate (VX, VY)
 
             case 0xE000:
                 switch (opcode & 0x000F) {
-                    case 0x009E:
+                    case 0x009E: // Skips the next instruction if the key stored in VX is pressed
 
-                    case 0x00A1:
+                    case 0x00A1: // Skips the next instruction if the key stored in VX isn't pressed
 
                     default:
                         System.out.println("Unknown opcode [0xE000]: " + opcode);
@@ -196,23 +196,23 @@ public class Chip8 {
 
             case 0xF000:
                 switch (opcode & 0x000F) {
-                    case 0x0007:
+                    case 0x0007: // Sets VX to the value of the delay timer
 
-                    case 0x000A:
+                    case 0x000A: // A key press is awaited, and then stored in VX
 
-                    case 0x0015:
+                    case 0x0015: // Sets the delay timer to VX
 
-                    case 0x0018:
+                    case 0x0018: // Sets the sound timer to VX
 
-                    case 0x001E:
+                    case 0x001E: // Adds VX to I
 
-                    case 0x0029:
+                    case 0x0029: // Sets I to the location of the sprite for the character in VX
 
-                    case 0x0033:
+                    case 0x0033: // Stores the binary-coded decimal representation of VX
 
-                    case 0x0055:
+                    case 0x0055: // Stores V0 to VX (including VX) in memory starting at address I
 
-                    case 0x0065:
+                    case 0x0065: // Fills V0 to VX (including VX) with values from memory starting at address I
 
                     default:
                         System.out.println("Unknown opcode [0xF000]: " + opcode);
