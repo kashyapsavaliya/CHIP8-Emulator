@@ -109,6 +109,10 @@ public class Chip8 {
         // Fetch Opcode
         opcode = (short) (memory[pc] << 8 | memory[pc + 1]);
 
+        // 4-bit register identifier
+        short X = (short) ((opcode & 0x0F00) >> 8);
+        short Y = (short) ((opcode & 0x00F0) >> 4);
+
         // Decode Opcode
         switch (opcode & 0xF000) { // ANNN: Sets I to the address NNN
             // Execute Opcode
@@ -132,30 +136,67 @@ public class Chip8 {
                 break;
 
             case 0x0001: // Jumps to address NNN
+                pc = (short) (opcode & 0x0FFF);
+                break;
 
             case 0x0002: // Calls subroutine at NNN
+                stack[sp] = pc;
+                ++sp;
+                pc = (short) (opcode & 0x0FFF);
+                break;
 
             case 0x0003: // Skips the next instruction if VX = NN
+                if (V[X] == (opcode & 0x00FF)) {
+                    pc += 2;
+                }
+                break;
 
             case 0x0004: // Skips the next instruction if VX != NN
+                if (V[X] != (opcode & 0x00FF)) {
+                    pc += 2;
+                }
+                break;
 
             case 0x0005: // Skips the next instruction if VX = VY
+                if (V[X] == V[Y]) {
+                    pc += 2;
+                }
+                break;
 
             case 0x0006: // Sets VX to NN
+                V[X] = (char) (opcode & 0x00FF);
+                break;
 
             case 0x0007: // Adds NN to VX
+                V[X] += (char) (opcode & 0x00FF);
 
             case 0x0008:
                 switch (opcode & 0x000F) {
                     case 0x0000: // Sets VX to the value VY
+                        V[X] = V[Y];
+                        break;
 
                     case 0x0001: // Sets VX to VX or VY
+                        V[X] = (char) (V[X] | V[Y]);
+                        break;
 
                     case 0x0002: // Sets VX to VX and VY
+                        V[X] = (char) (V[X] & V[Y]);
+                        break;
 
                     case 0x0003: // Sets VX to VX xor VY
+                        V[X] = (char) (V[X] ^ V[Y]);
+                        break;
 
                     case 0x0004: // Adds VY to VX. VF is set to 1 when there's a carry and 0 if not
+                        if (V[Y] > (0xFF - V[X])) {
+                            V[0xF] = 1;
+                        } else {
+                            V[0xF] = 0;
+                        }
+                        V[X] += V[Y];
+                        pc += 2;
+                        break;
 
                     case 0x0005: // VY is subtracted from VX. VF is set to 0 when there's a borrow and 1 if not
 
@@ -171,6 +212,10 @@ public class Chip8 {
                 break;
 
             case 0x0009: // Skips the next instruction if VX != VY
+                if (V[X] != V[Y]) {
+                    pc += 2;
+                }
+                break;
 
             case 0xA000: // Sets I to the address NNN
                 I = (short) (opcode & 0xFFFF);
@@ -178,14 +223,43 @@ public class Chip8 {
                 break;
 
             case 0xB000: // Jumps to the address NNN plus V0
+                pc = (short) ((opcode & 0x0FFF) + V[0]);
 
             case 0xC000: // Sets VX to the result of a bitwise and operation on a random number and NN
 
             case 0xD000: // Draws a sprite at coordinate (VX, VY)
+            {
+                short x = (short) V[X];
+                short y = (short) V[Y];
+                short height = (short) (opcode & 0x000F);
+                short pixel;
+
+                V[0xF] = 0;
+                for (int yline = 0; yline < height; yline++) {
+                    pixel = (short) memory[I + yline];
+                    for (int xline = 0; xline < 8; xline++) {
+                        if ((pixel & (0x80 >> xline)) != 0) {
+                            if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
+                                V[0xF] = 1;
+                            }
+                            gfx[x + xline + ((y + yline) * 64)] ^= 1;
+                        }
+                    }
+                }
+                drawFlag = true;
+                pc += 2;
+            }
+            break;
 
             case 0xE000:
                 switch (opcode & 0x000F) {
                     case 0x009E: // Skips the next instruction if the key stored in VX is pressed
+                        if (key[V[X]] != 0) {
+                            pc += 4;
+                        } else {
+                            pc += 2;
+                        }
+                        break;
 
                     case 0x00A1: // Skips the next instruction if the key stored in VX isn't pressed
 
@@ -197,18 +271,31 @@ public class Chip8 {
             case 0xF000:
                 switch (opcode & 0x000F) {
                     case 0x0007: // Sets VX to the value of the delay timer
+                        V[X] = delay_timer;
+                        break;
 
                     case 0x000A: // A key press is awaited, and then stored in VX
 
                     case 0x0015: // Sets the delay timer to VX
+                        delay_timer = V[X];
+                        break;
 
                     case 0x0018: // Sets the sound timer to VX
+                        sound_timer = V[X];
+                        break;
 
                     case 0x001E: // Adds VX to I
+                        I += V[X];
+                        break;
 
                     case 0x0029: // Sets I to the location of the sprite for the character in VX
 
                     case 0x0033: // Stores the binary-coded decimal representation of VX
+                        memory[I] = (char) (V[X] / 100);
+                        memory[I + 1] = (char) ((V[X] / 10) % 10);
+                        memory[I + 2] = (char) ((V[X] % 100) % 10);
+                        pc += 2;
+                        break;
 
                     case 0x0055: // Stores V0 to VX (including VX) in memory starting at address I
 
