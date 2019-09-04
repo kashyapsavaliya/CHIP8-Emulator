@@ -2,6 +2,7 @@ package com.kashyapsavaliya.chip8;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Random;
 
 public class Chip8 {
 
@@ -199,12 +200,36 @@ public class Chip8 {
                         break;
 
                     case 0x0005: // VY is subtracted from VX. VF is set to 0 when there's a borrow and 1 if not
+                        if (V[Y] > V[X]) {
+                            V[0xF] = 1;
+                        } else {
+                            V[0xF] = 0;
+                        }
+                        V[X] -= V[Y];
+                        pc += 2;
+                        break;
 
                     case 0x0006: // Stores the least significant bit of VX in VF. Shifts VX to the right by 1
+                        V[0xF] = (char) (V[X] & 0x01);
+                        V[X] = (char) (V[X] >> 1);
+                        pc += 2;
+                        break;
 
                     case 0x0007: // Sets VX to VY minus VX. VF is set to 0 when there's a borrow and 1 if not
+                        if (V[Y] > V[X]) {
+                            V[0xF] = 1;
+                        } else {
+                            V[0xF] = 0;
+                        }
+                        V[X] = (char) (V[Y] - V[X]);
+                        pc += 2;
+                        break;
 
                     case 0x000E: // Stores the most significant bit of VX in VF. Shifts VX to the left by 1
+                        V[0xF] = (char) (V[X] >> 7);
+                        V[X] = (char) (V[X] << 1);
+                        pc += 2;
+                        break;
 
                     default:
                         System.out.println("Unknown opcode [0x0008]: " + opcode);
@@ -224,8 +249,13 @@ public class Chip8 {
 
             case 0xB000: // Jumps to the address NNN plus V0
                 pc = (short) ((opcode & 0x0FFF) + V[0]);
+                break;
 
             case 0xC000: // Sets VX to the result of a bitwise and operation on a random number and NN
+                int rng = new Random().nextInt(256);
+                V[X] = (char) (rng & (opcode & 0xFF));
+                pc += 2;
+                break;
 
             case 0xD000: // Draws a sprite at coordinate (VX, VY)
             {
@@ -262,6 +292,12 @@ public class Chip8 {
                         break;
 
                     case 0x00A1: // Skips the next instruction if the key stored in VX isn't pressed
+                        if (key[V[X]] == 0) {
+                            pc += 4;
+                        } else {
+                            pc += 2;
+                        }
+                        break;
 
                     default:
                         System.out.println("Unknown opcode [0xE000]: " + opcode);
