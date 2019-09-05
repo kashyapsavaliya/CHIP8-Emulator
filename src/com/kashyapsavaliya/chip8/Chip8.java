@@ -136,42 +136,42 @@ public class Chip8 {
                 }
                 break;
 
-            case 0x0001: // Jumps to address NNN
+            case 0x1000: // Jumps to address NNN
                 pc = (short) (opcode & 0x0FFF);
                 break;
 
-            case 0x0002: // Calls subroutine at NNN
+            case 0x2000: // Calls subroutine at NNN
                 stack[sp] = pc;
                 ++sp;
                 pc = (short) (opcode & 0x0FFF);
                 break;
 
-            case 0x0003: // Skips the next instruction if VX = NN
+            case 0x3000: // Skips the next instruction if VX = NN
                 if (V[X] == (opcode & 0x00FF)) {
                     pc += 2;
                 }
                 break;
 
-            case 0x0004: // Skips the next instruction if VX != NN
+            case 0x4000: // Skips the next instruction if VX != NN
                 if (V[X] != (opcode & 0x00FF)) {
                     pc += 2;
                 }
                 break;
 
-            case 0x0005: // Skips the next instruction if VX = VY
+            case 0x5000: // Skips the next instruction if VX = VY
                 if (V[X] == V[Y]) {
                     pc += 2;
                 }
                 break;
 
-            case 0x0006: // Sets VX to NN
+            case 0x6000: // Sets VX to NN
                 V[X] = (char) (opcode & 0x00FF);
                 break;
 
-            case 0x0007: // Adds NN to VX
+            case 0x7000: // Adds NN to VX
                 V[X] += (char) (opcode & 0x00FF);
 
-            case 0x0008:
+            case 0x8000:
                 switch (opcode & 0x000F) {
                     case 0x0000: // Sets VX to the value VY
                         V[X] = V[Y];
@@ -236,7 +236,7 @@ public class Chip8 {
                 }
                 break;
 
-            case 0x0009: // Skips the next instruction if VX != VY
+            case 0x9000: // Skips the next instruction if VX != VY
                 if (V[X] != V[Y]) {
                     pc += 2;
                 }
@@ -244,7 +244,6 @@ public class Chip8 {
 
             case 0xA000: // Sets I to the address NNN
                 I = (short) (opcode & 0xFFFF);
-                pc += 2;
                 break;
 
             case 0xB000: // Jumps to the address NNN plus V0
@@ -254,7 +253,6 @@ public class Chip8 {
             case 0xC000: // Sets VX to the result of a bitwise and operation on a random number and NN
                 int rng = new Random().nextInt(256);
                 V[X] = (char) (rng & (opcode & 0xFF));
-                pc += 2;
                 break;
 
             case 0xD000: // Draws a sprite at coordinate (VX, VY)
@@ -311,9 +309,22 @@ public class Chip8 {
                         break;
 
                     case 0x000A: // A key press is awaited, and then stored in VX
+                        boolean keyPressed = false;
+                        for (int i = 1; i < KEY_SIZE; i++) {
+                            if (key[i] != 0) {
+                                V[X] = (char) i;
+                                keyPressed = true;
+                            }
+                        }
+
+                        if (!keyPressed) {
+                            return;
+                        }
+                        break;
 
                     case 0x0015: // Sets the delay timer to VX
                         delay_timer = V[X];
+                        pc += 2;
                         break;
 
                     case 0x0018: // Sets the sound timer to VX
@@ -325,17 +336,26 @@ public class Chip8 {
                         break;
 
                     case 0x0029: // Sets I to the location of the sprite for the character in VX
+                        I = (short) (V[X] * 5);
+                        break;
 
                     case 0x0033: // Stores the binary-coded decimal representation of VX
                         memory[I] = (char) (V[X] / 100);
                         memory[I + 1] = (char) ((V[X] / 10) % 10);
                         memory[I + 2] = (char) ((V[X] % 100) % 10);
-                        pc += 2;
                         break;
 
                     case 0x0055: // Stores V0 to VX (including VX) in memory starting at address I
+                        for (int i = 0; i < X; i++) {
+                            memory[I + i] = V[i];
+                        }
+                        break;
 
                     case 0x0065: // Fills V0 to VX (including VX) with values from memory starting at address I
+                        for (int i = 0; i < X; i++) {
+                            V[i] = memory[I + i];
+                        }
+                        break;
 
                     default:
                         System.out.println("Unknown opcode [0xF000]: " + opcode);
