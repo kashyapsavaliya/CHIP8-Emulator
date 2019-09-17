@@ -1,12 +1,11 @@
 package com.kashyapsavaliya.chip8;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Random;
 
 public class Chip8 {
 
-    private static final int MEMORY = 4090;
+    private static final int MEMORY = 4096;
     private static final int REGISTER_SIZE = 16;
     private static final int STACK_SIZE = 16;
     private static final int KEY_SIZE = 16;
@@ -32,24 +31,24 @@ public class Chip8 {
     };
 
     private short opcode;
-    private char[] memory;
-    private char[] V;
+    private char[] memory = new char[MEMORY];
+    private char[] V = new char[REGISTER_SIZE];
     private short I;
     private short pc;
-    private char[] gfx;
+    private char[] gfx = new char[GFX_SIZE];
     private char delay_timer;
     private char sound_timer;
-    private short[] stack;
+    private short[] stack = new short[STACK_SIZE];
     private short sp;
-    private char[] key;
+    private char[] key = new char[KEY_SIZE];
 
     public boolean drawFlag;
 
     public Chip8() {
-        initialize();
+
     }
 
-    private void initialize() {
+    public void initialize() {
         // Initialize registers and memory once
         pc = 0x200; // Program counter starts at 0x200
         opcode = 0; // Reset current opcode
@@ -94,11 +93,11 @@ public class Chip8 {
 
     public void loadGame() {
         try {
-            FileInputStream file = new FileInputStream("Roms/IBM");
-            int bufferSize = file.available();
-            byte[] buffer = new byte[bufferSize];
+            DataInputStream file = new DataInputStream(new FileInputStream("Roms/SPACE_INVADERS"));
+            byte[] buffer = file.readAllBytes();
+            int bufferSize = buffer.length;
             for (int i = 0; i < bufferSize; i++) {
-                memory[i + 512] = (char) buffer[i];
+                memory[i + 512] = (char) (buffer[i] & 0xFF);
             }
             System.out.println("Rom loaded");
         } catch (IOException e) {
@@ -108,8 +107,9 @@ public class Chip8 {
 
     public void emulateCycle() {
         // Fetch Opcode
-        opcode = (short) (memory[pc] << 8 | memory[pc + 1]);
-
+        opcode = (short) ((memory[pc] << 8) | (memory[pc + 1]));
+        //System.out.println(opcode);
+        System.out.print(Integer.toHexString(opcode) + " : ");
         // 4-bit register identifier
         short X = (short) ((opcode & 0x0F00) >> 8);
         short Y = (short) ((opcode & 0x00F0) >> 4);
@@ -123,6 +123,7 @@ public class Chip8 {
                         for (int i = 0; i < GFX_SIZE; i++) {
                             gfx[i] = 0;
                         }
+                        drawFlag = true;
                         pc += 2;
                         break;
 
@@ -141,52 +142,64 @@ public class Chip8 {
                 break;
 
             case 0x2000: // Calls subroutine at NNN
-                stack[sp] = pc;
-                ++sp;
+                stack[sp++] = pc;
                 pc = (short) (opcode & 0x0FFF);
                 break;
 
             case 0x3000: // Skips the next instruction if VX = NN
                 if (V[X] == (opcode & 0x00FF)) {
+                    pc += 4;
+                } else {
                     pc += 2;
                 }
                 break;
 
             case 0x4000: // Skips the next instruction if VX != NN
                 if (V[X] != (opcode & 0x00FF)) {
+                    pc += 4;
+                } else {
                     pc += 2;
                 }
                 break;
 
             case 0x5000: // Skips the next instruction if VX = VY
                 if (V[X] == V[Y]) {
+                    pc += 4;
+                } else {
                     pc += 2;
                 }
                 break;
 
             case 0x6000: // Sets VX to NN
                 V[X] = (char) (opcode & 0x00FF);
+                pc += 2;
                 break;
 
             case 0x7000: // Adds NN to VX
                 V[X] += (char) (opcode & 0x00FF);
+                pc += 2;
+                break;
 
             case 0x8000:
                 switch (opcode & 0x000F) {
                     case 0x0000: // Sets VX to the value VY
                         V[X] = V[Y];
+                        pc += 2;
                         break;
 
                     case 0x0001: // Sets VX to VX or VY
                         V[X] = (char) (V[X] | V[Y]);
+                        pc += 2;
                         break;
 
                     case 0x0002: // Sets VX to VX and VY
                         V[X] = (char) (V[X] & V[Y]);
+                        pc += 2;
                         break;
 
                     case 0x0003: // Sets VX to VX xor VY
                         V[X] = (char) (V[X] ^ V[Y]);
+                        pc += 2;
                         break;
 
                     case 0x0004: // Adds VY to VX. VF is set to 1 when there's a carry and 0 if not
@@ -238,12 +251,15 @@ public class Chip8 {
 
             case 0x9000: // Skips the next instruction if VX != VY
                 if (V[X] != V[Y]) {
+                    pc += 4;
+                } else {
                     pc += 2;
                 }
                 break;
 
             case 0xA000: // Sets I to the address NNN
-                I = (short) (opcode & 0xFFFF);
+                I = (short) (opcode & 0x0FFF);
+                pc += 2;
                 break;
 
             case 0xB000: // Jumps to the address NNN plus V0
@@ -253,6 +269,7 @@ public class Chip8 {
             case 0xC000: // Sets VX to the result of a bitwise and operation on a random number and NN
                 int rng = new Random().nextInt(256);
                 V[X] = (char) (rng & (opcode & 0xFF));
+                pc += 2;
                 break;
 
             case 0xD000: // Draws a sprite at coordinate (VX, VY)
@@ -280,7 +297,7 @@ public class Chip8 {
             break;
 
             case 0xE000:
-                switch (opcode & 0x000F) {
+                switch (opcode & 0x00FF) {
                     case 0x009E: // Skips the next instruction if the key stored in VX is pressed
                         if (key[V[X]] != 0) {
                             pc += 4;
@@ -303,9 +320,10 @@ public class Chip8 {
                 break;
 
             case 0xF000:
-                switch (opcode & 0x000F) {
+                switch (opcode & 0x00FF) {
                     case 0x0007: // Sets VX to the value of the delay timer
                         V[X] = delay_timer;
+                        pc += 2;
                         break;
 
                     case 0x000A: // A key press is awaited, and then stored in VX
@@ -320,6 +338,7 @@ public class Chip8 {
                         if (!keyPressed) {
                             return;
                         }
+                        pc += 2;
                         break;
 
                     case 0x0015: // Sets the delay timer to VX
@@ -329,32 +348,40 @@ public class Chip8 {
 
                     case 0x0018: // Sets the sound timer to VX
                         sound_timer = V[X];
+                        pc += 2;
                         break;
 
                     case 0x001E: // Adds VX to I
                         I += V[X];
+                        pc += 2;
                         break;
 
                     case 0x0029: // Sets I to the location of the sprite for the character in VX
                         I = (short) (V[X] * 5);
+                        pc += 2;
                         break;
 
                     case 0x0033: // Stores the binary-coded decimal representation of VX
                         memory[I] = (char) (V[X] / 100);
                         memory[I + 1] = (char) ((V[X] / 10) % 10);
                         memory[I + 2] = (char) ((V[X] % 100) % 10);
+                        pc += 2;
                         break;
 
                     case 0x0055: // Stores V0 to VX (including VX) in memory starting at address I
                         for (int i = 0; i < X; i++) {
                             memory[I + i] = V[i];
                         }
+                        I = (short) (I + X + 0x1);
+                        pc += 2;
                         break;
 
                     case 0x0065: // Fills V0 to VX (including VX) with values from memory starting at address I
                         for (int i = 0; i < X; i++) {
                             V[i] = memory[I + i];
                         }
+                        I = (short) (I + X + 0x1);
+                        pc += 2;
                         break;
 
                     default:
@@ -379,6 +406,10 @@ public class Chip8 {
             }
             --sound_timer;
         }
+    }
+
+    public char[] getGfx() {
+        return gfx;
     }
 
 }
