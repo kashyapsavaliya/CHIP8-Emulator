@@ -16,6 +16,7 @@ public class Main {
 
         while (true) { // Start
             // Emulate one cycle
+            chip8.fetch();
             chip8.emulateCycle();
 
             // If the draw flag is set, update the screen
@@ -28,16 +29,12 @@ public class Main {
             keyboard.setKeys();
 
             try {
-                Thread.sleep(16);
+                Thread.sleep(1);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
 
         }
-
-    }
-
-    private static void drawGraphics() {
 
     }
 

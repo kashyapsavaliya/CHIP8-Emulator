@@ -93,7 +93,7 @@ public class Chip8 {
 
     public void loadGame() {
         try {
-            DataInputStream file = new DataInputStream(new FileInputStream("Roms/SPACE_INVADERS"));
+            DataInputStream file = new DataInputStream(new FileInputStream("Roms/PONG"));
             byte[] buffer = file.readAllBytes();
             int bufferSize = buffer.length;
             for (int i = 0; i < bufferSize; i++) {
@@ -105,9 +105,11 @@ public class Chip8 {
         }
     }
 
-    public void emulateCycle() {
-        // Fetch Opcode
+    public void fetch() {
         opcode = (short) ((memory[pc] << 8) | (memory[pc + 1]));
+    }
+
+    public void emulateCycle() {
         //System.out.println(opcode);
         System.out.print(Integer.toHexString(opcode) + " : ");
         // 4-bit register identifier
@@ -176,7 +178,7 @@ public class Chip8 {
                 break;
 
             case 0x7000: // Adds NN to VX
-                V[X] += (char) (opcode & 0x00FF);
+                V[X] = (char) (V[X] + (opcode & 0x00FF) & 0xFF);
                 pc += 2;
                 break;
 
@@ -188,22 +190,22 @@ public class Chip8 {
                         break;
 
                     case 0x0001: // Sets VX to VX or VY
-                        V[X] = (char) (V[X] | V[Y]);
+                        V[X] |= V[Y];
                         pc += 2;
                         break;
 
                     case 0x0002: // Sets VX to VX and VY
-                        V[X] = (char) (V[X] & V[Y]);
+                        V[X] &= V[Y];
                         pc += 2;
                         break;
 
                     case 0x0003: // Sets VX to VX xor VY
-                        V[X] = (char) (V[X] ^ V[Y]);
+                        V[X] ^= V[Y];
                         pc += 2;
                         break;
 
                     case 0x0004: // Adds VY to VX. VF is set to 1 when there's a carry and 0 if not
-                        if (V[Y] > (0xFF - V[X])) {
+                        if ((V[X] + V[Y]) > 255) {
                             V[0xF] = 1;
                         } else {
                             V[0xF] = 0;
@@ -213,7 +215,7 @@ public class Chip8 {
                         break;
 
                     case 0x0005: // VY is subtracted from VX. VF is set to 0 when there's a borrow and 1 if not
-                        if (V[Y] > V[X]) {
+                        if (V[X] > V[Y]) {
                             V[0xF] = 1;
                         } else {
                             V[0xF] = 0;
@@ -369,7 +371,7 @@ public class Chip8 {
                         break;
 
                     case 0x0055: // Stores V0 to VX (including VX) in memory starting at address I
-                        for (int i = 0; i < X; i++) {
+                        for (int i = 0; i <= X; i++) {
                             memory[I + i] = V[i];
                         }
                         I = (short) (I + X + 0x1);
@@ -377,7 +379,7 @@ public class Chip8 {
                         break;
 
                     case 0x0065: // Fills V0 to VX (including VX) with values from memory starting at address I
-                        for (int i = 0; i < X; i++) {
+                        for (int i = 0; i <= X; i++) {
                             V[i] = memory[I + i];
                         }
                         I = (short) (I + X + 0x1);
