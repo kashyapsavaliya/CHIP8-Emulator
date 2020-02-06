@@ -1,13 +1,15 @@
 package com.kashyapsavaliya.chip8;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
         Chip8 chip8 = new Chip8();
         Keyboard keyboard = new Keyboard();
-        Frame frame = new Frame(chip8);
+        Panel panel = new Panel(chip8);
 
         chip8.initialize();
         chip8.loadGame();
@@ -18,12 +20,18 @@ public class Main {
 
             // If the draw flag is set, update the screen
             if (chip8.drawFlag) {
-                frame.repaint();
+                panel.repaint();
                 chip8.drawFlag = false;
             }
 
             // Store key press state (Press and Release)
             keyboard.setKeys();
+
+            try {
+                Thread.sleep(16);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
 
         }
 

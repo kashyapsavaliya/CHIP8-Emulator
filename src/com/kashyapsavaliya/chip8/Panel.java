@@ -5,14 +5,19 @@ import java.awt.*;
 
 class Panel extends JPanel {
 
-    private Chip8 chip8;
+    private char[] gfx;
 
     public Panel(Chip8 chip8) {
-        this.chip8 = chip8;
+        this.gfx = chip8.getGfx();
+        JFrame f = new JFrame("CHIP-8");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.add(this);
+        f.pack();
+        f.setVisible(true);
     }
 
     public void paint(Graphics g) {
-        char[] gfx = chip8.getGfx();
+
         for (int i = 0; i < gfx.length; i++) {
             if (gfx[i] == 0) {
                 g.setColor(Color.BLACK);
