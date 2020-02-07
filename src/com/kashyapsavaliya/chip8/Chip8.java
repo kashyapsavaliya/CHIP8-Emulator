@@ -95,7 +95,7 @@ public class Chip8 {
 
     public void loadGame() {
         try {
-            DataInputStream file = new DataInputStream(new FileInputStream("Roms/PONG"));
+            DataInputStream file = new DataInputStream(new FileInputStream("Roms/IBM"));
             byte[] buffer = file.readAllBytes();
             int bufferSize = buffer.length;
             for (int i = 0; i < bufferSize; i++) {
@@ -212,7 +212,7 @@ public class Chip8 {
                         } else {
                             V[0xF] = 0;
                         }
-                        V[X] += V[Y];
+                        V[X] = (char) ((V[X] + V[Y]) & 0xFF);
                         pc += 2;
                         break;
 
@@ -222,7 +222,7 @@ public class Chip8 {
                         } else {
                             V[0xF] = 0;
                         }
-                        V[X] -= V[Y];
+                        V[X] = (char) ((V[X] - V[Y]) & 0xFF);
                         pc += 2;
                         break;
 
