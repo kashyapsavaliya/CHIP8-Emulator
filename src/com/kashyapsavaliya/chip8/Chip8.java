@@ -288,10 +288,11 @@ public class Chip8 {
                     pixel = (short) memory[I + yline];
                     for (int xline = 0; xline < 8; xline++) {
                         if ((pixel & (0x80 >> xline)) != 0) {
-                            if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
+                            int z = (x + xline + ((y + yline) * 64)) % 2048;
+                            if (gfx[z] == 1) {
                                 V[0xF] = 1;
                             }
-                            gfx[x + xline + ((y + yline) * 64)] ^= 1;
+                            gfx[z] ^= 1;
                         }
                     }
                 }
