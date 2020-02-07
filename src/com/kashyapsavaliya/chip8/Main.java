@@ -1,21 +1,21 @@
 package com.kashyapsavaliya.chip8;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Chip8 chip8 = new Chip8();
         Keyboard keyboard = new Keyboard();
         Panel panel = new Panel(chip8);
-
         chip8.initialize();
         chip8.loadGame();
+        keyboard.setKeys(); // Store key press state (Press and Release)
+        panel.addKeyListener(keyboard);
 
         while (true) { // Start
             // Emulate one cycle
+            chip8.setKeyBuffer(keyboard.getKeyBuffer());
             chip8.fetch();
             chip8.emulateCycle();
 
@@ -24,9 +24,6 @@ public class Main {
                 panel.repaint();
                 chip8.drawFlag = false;
             }
-
-            // Store key press state (Press and Release)
-            keyboard.setKeys();
 
             try {
                 Thread.sleep(1);

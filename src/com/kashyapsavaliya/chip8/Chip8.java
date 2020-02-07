@@ -41,9 +41,9 @@ public class Chip8 {
     private short[] stack = new short[STACK_SIZE];
     private short sp;
     private char[] key = new char[KEY_SIZE];
-
     public boolean drawFlag;
 
+    private Keyboard keyboard;
     public Chip8() {
 
     }
@@ -58,6 +58,8 @@ public class Chip8 {
         // Reset timers
         delay_timer = 0;
         sound_timer = 0;
+        keyboard = new Keyboard();
+        keyboard.setKeys();
 
         // Clear display
         for (int i = 0; i < GFX_SIZE; i++) {
@@ -412,6 +414,12 @@ public class Chip8 {
 
     public char[] getGfx() {
         return gfx;
+    }
+
+    public void setKeyBuffer(int[] keyBuffer) {
+        for(int i = 0; i < key.length; i++) {
+            key[i] = (char) keyBuffer[i];
+        }
     }
 
 }

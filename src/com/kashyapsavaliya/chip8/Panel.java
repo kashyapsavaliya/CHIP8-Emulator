@@ -14,6 +14,7 @@ class Panel extends JPanel {
         f.add(this);
         f.pack();
         f.setVisible(true);
+        this.setFocusable(true);
     }
 
     public void paint(Graphics g) {

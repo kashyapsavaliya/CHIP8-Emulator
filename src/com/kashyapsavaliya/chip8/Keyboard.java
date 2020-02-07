@@ -40,19 +40,19 @@ public class Keyboard implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (key.get(e.getKeyCode()) != -1) {
-            keyBuffer[key.get(e.getKeyCode())] = 1;
+        if (key.get(e.getKeyChar()) != -1) {
+            keyBuffer[key.get(e.getKeyChar())] = 1;
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (key.get(e.getKeyCode()) != -1) {
-            keyBuffer[key.get(e.getKeyCode())] = 1;
+        if (key.get(e.getKeyChar()) != -1) {
+            keyBuffer[key.get(e.getKeyChar())] = 0;
         }
     }
 
-    public static int[] getKeyBuffer() {
+    public int[] getKeyBuffer() {
         return keyBuffer;
     }
 
