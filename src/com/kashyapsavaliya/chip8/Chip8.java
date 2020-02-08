@@ -42,6 +42,7 @@ public class Chip8 {
     private short sp;
     private char[] key = new char[KEY_SIZE];
     public boolean drawFlag;
+    private int step = 0;
 
     private Keyboard keyboard;
     public Chip8() {
@@ -95,7 +96,7 @@ public class Chip8 {
 
     public void loadGame() {
         try {
-            DataInputStream file = new DataInputStream(new FileInputStream("Roms/IBM"));
+            DataInputStream file = new DataInputStream(new FileInputStream("Roms/SPACE_INVADERS"));
             byte[] buffer = file.readAllBytes();
             int bufferSize = buffer.length;
             for (int i = 0; i < bufferSize; i++) {
@@ -400,9 +401,11 @@ public class Chip8 {
         }
 
         // Update timers
-        if (delay_timer > 0) {
+        if (delay_timer > 0 && step == 0) {
             --delay_timer;
         }
+        step++;
+        step %= 16;
 
         if (sound_timer > 0) {
             if (sound_timer == 1) {
